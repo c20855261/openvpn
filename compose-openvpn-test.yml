@@ -1,0 +1,25 @@
+version: '2'
+services:
+  openvpn-test:
+    cap_add:
+     - NET_ADMIN
+    image: kylemanna/openvpn
+    container_name: openvpn-test
+    hostname: openvpn-test
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 0
+      net.ipv6.conf.default.forwarding: 1
+      net.ipv6.conf.all.forwarding: 1
+    network_mode: bridge
+    ports:
+     - "31198:1194/udp"
+    restart: always
+    volumes:
+     - ./conf:/etc/openvpn
+    environment:
+     TZ: Asia/Shanghai
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"

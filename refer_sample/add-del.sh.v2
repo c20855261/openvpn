@@ -1,0 +1,37 @@
+#!/bin/bash
+ENV="test"
+CONTAINER_NAME="openvpn-${ENV}"
+#UNAME="user111"
+FILE_NAME="compose-openvpn-${ENV}.yml"
+COMPOSE_DIR="/opt/docker-compose/openvpn/${ENV}/${FILE_NAME}"
+
+printf "\n請選擇執行項目\n1. 建立使用者\n2. 刪除使用者\n\n"
+read -p "請輸入 (1-2): " choice
+
+case $choice in
+    1)
+        read -p "請輸入用戶名: " UNAME
+        echo "P@ssw0rd" | docker-compose -f ${COMPOSE_DIR} run --rm ${CONTAINER_NAME} easyrsa build-client-full ${UNAME} nopass
+        #docker-compose -f ${COMPOSE_DIR} run --rm ${CONTAINER_NAME} easyrsa build-client-full ${UNAME} nopass
+        docker-compose -f ${COMPOSE_DIR} run --rm ${CONTAINER_NAME} ovpn_getclient ${UNAME} > ${UNAME}.ovpn
+        ;;
+    2)
+        read -p "請輸入要刪除的用戶名: " CLIENTNAME
+        {
+          echo "yes"
+          echo "P@ssw0rd"
+          echo "P@ssw0rd"
+        } | docker-compose -f ${COMPOSE_DIR} run --rm ${CONTAINER_NAME} ovpn_revokeclient $CLIENTNAME remove
+
+        if [ $? -eq 0 ];then
+          printf "\nok\n"
+          #rm -rf user/${UNAME}.ovpn
+        else
+          printf "\n刪除使用者失敗!\n"
+        fi
+        ;;
+    *)
+        echo "請輸入有效的選項(1或2)"
+        ;;
+esac
+
